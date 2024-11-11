@@ -1,0 +1,46 @@
+create table
+  public.medications (
+    id uuid not null default extensions.uuid_generate_v4 (),
+    user_id uuid not null,
+    medication_name text not null,
+    dosage text not null,
+    dosage_unit text not null,
+    frequency public.frequency_type not null,
+    times_per_frequency integer not null,
+    preferred_time time_of_day[] not null,
+    start_date date not null default now(),
+    end_date date null,
+    notes text null,
+    remaining_quantity integer null,
+    refill_reminder boolean null default false,
+    refill_reminder_threshold integer null,
+    created_at timestamp with time zone not null default timezone ('utc'::text, now()),
+    updated_at timestamp with time zone not null default timezone ('utc'::text, now()),
+    constraint medications_pkey primary key (id),
+    constraint medications_user_id_fkey foreign key (user_id) references auth.users (id)
+  ) tablespace pg_default;
+
+create index if not exists medications_user_id_index on public.medications using btree (user_id) tablespace pg_default;
+
+create trigger update_medications_updated_at before
+update on medications for each row
+execute function update_updated_at_column ();
+
+
+create table
+  public.medication_logs (
+    id uuid not null default extensions.uuid_generate_v4 (),
+    medication_id uuid not null,
+    user_id uuid not null,
+    taken_at timestamp with time zone not null default timezone ('utc'::text, now()),
+    scheduled_time public.time_of_day not null,
+    notes text null,
+    created_at timestamp with time zone not null default timezone ('utc'::text, now()),
+    constraint medication_logs_pkey primary key (id),
+    constraint medication_logs_medication_id_fkey foreign key (medication_id) references medications (id) on delete cascade,
+    constraint medication_logs_user_id_fkey foreign key (user_id) references auth.users (id)
+  ) tablespace pg_default;
+
+create index if not exists medication_logs_user_id_index on public.medication_logs using btree (user_id) tablespace pg_default;
+
+create index if not exists medication_logs_medication_id_index on public.medication_logs using btree (medication_id) tablespace pg_default;
