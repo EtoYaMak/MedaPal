@@ -39,6 +39,14 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="add"
+        options={{
+          title: "Add Medication",
+          href: null,
+          headerShown: false,
+        }}
+      />
+      <Tabs.Screen
         name="account"
         options={{
           title: "Profile",
