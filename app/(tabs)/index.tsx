@@ -1,4 +1,9 @@
-import { StyleSheet, TouchableOpacity, ScrollView, RefreshControl } from "react-native";
+import {
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  RefreshControl,
+} from "react-native";
 import { Text, View } from "@/components/Themed";
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "../../lib/supabase";
@@ -6,6 +11,8 @@ import { AntDesign, MaterialIcons } from "@expo/vector-icons";
 import { Session } from "@supabase/supabase-js";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useAppTheme } from "@/hooks/useAppTheme";
+import colors from "@/constants/Colors";
 
 interface Medication {
   id: string;
@@ -25,11 +32,14 @@ export default function DashboardScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
   const router = useRouter();
+  const { colors } = useAppTheme();
 
   const getUserMedications = async () => {
     try {
       setLoading(true);
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
       if (!session) return;
 
@@ -89,8 +99,8 @@ export default function DashboardScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        <Text style={styles.headerTitle}>Your Medications</Text>
-        
+        <Text style={styles.headerTitle}>Medications</Text>
+
         {medications.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>No medications added yet</Text>
@@ -107,7 +117,9 @@ export default function DashboardScreen() {
             {medications.map((med) => (
               <View key={med.id} style={styles.medicationCard}>
                 <View style={styles.cardHeader}>
-                  <Text style={styles.medicationName}>{med.medication_name}</Text>
+                  <Text style={styles.medicationName}>
+                    {med.medication_name}
+                  </Text>
                   <View style={styles.dosageContainer}>
                     <Text style={styles.dosageText}>
                       {med.dosage} {med.dosage_unit}
@@ -119,7 +131,7 @@ export default function DashboardScreen() {
                   <Text style={styles.frequencyText}>
                     {med.times_per_frequency}x {med.frequency}
                   </Text>
-                  
+
                   <View style={styles.timeContainer}>
                     {med.preferred_time.map((time, index) => (
                       <View key={index} style={styles.timeItem}>
@@ -166,7 +178,7 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: colors.light.background,
   },
   container: {
     flex: 1,
@@ -176,6 +188,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     padding: 20,
     paddingBottom: 10,
+    color: colors.light.text,
   },
   emptyContainer: {
     flex: 1,
@@ -183,16 +196,20 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: 20,
     marginTop: 100,
+    backgroundColor: "transparent",
   },
   emptyText: {
     fontSize: 20,
     fontWeight: "bold",
     marginBottom: 10,
+    color: colors.light.text,
+    backgroundColor: "transparent",
   },
   emptySubText: {
     fontSize: 16,
-    color: "#666",
+    color: colors.light.text,
     textAlign: "center",
+    backgroundColor: "transparent",
   },
   medicationList: {
     padding: 20,
@@ -200,10 +217,10 @@ const styles = StyleSheet.create({
     gap: 15,
   },
   medicationCard: {
-    backgroundColor: "white",
+    backgroundColor: colors.light.card,
     borderRadius: 15,
     padding: 20,
-    width: 300,
+    width: 350,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -215,11 +232,13 @@ const styles = StyleSheet.create({
   },
   cardHeader: {
     marginBottom: 15,
+    backgroundColor: "transparent",
   },
   medicationName: {
     fontSize: 20,
     fontWeight: "bold",
     marginBottom: 5,
+    color: colors.light.text,
   },
   dosageContainer: {
     backgroundColor: "#E8F5E9",
@@ -234,6 +253,7 @@ const styles = StyleSheet.create({
   },
   cardBody: {
     gap: 10,
+    backgroundColor: "transparent",
   },
   frequencyText: {
     fontSize: 16,
@@ -243,11 +263,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
+    backgroundColor: "transparent",
   },
   timeItem: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F5F5F5",
+    backgroundColor: colors.light.background,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
@@ -259,6 +280,7 @@ const styles = StyleSheet.create({
   },
   remainingContainer: {
     marginTop: 5,
+    backgroundColor: "transparent",
   },
   remainingText: {
     color: "#666",

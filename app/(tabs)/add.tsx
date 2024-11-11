@@ -11,7 +11,8 @@ import { supabase } from "../../lib/supabase";
 import { useRouter } from "expo-router";
 import { Picker } from "@react-native-picker/picker";
 import { SafeAreaView } from "react-native-safe-area-context";
-
+import { useAppTheme } from "@/hooks/useAppTheme";
+import colors from "@/constants/Colors";
 // Define the time slots enum to match your Supabase enum
 type TimeOfDay = "morning" | "afternoon" | "evening" | "bedtime";
 
@@ -30,6 +31,7 @@ export default function AddMedicationScreen() {
     refill_reminder: false,
     refill_reminder_threshold: "",
   });
+  const { colors } = useAppTheme();
 
   async function addMedication() {
     try {
@@ -163,7 +165,9 @@ export default function AddMedicationScreen() {
                         styles.timeButtonTextSelected,
                     ]}
                   >
-                    {time === "bedtime" ? "Bedtime" : time.charAt(0).toUpperCase() + time.slice(1)}
+                    {time === "bedtime"
+                      ? "Bedtime"
+                      : time.charAt(0).toUpperCase() + time.slice(1)}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -251,10 +255,11 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: colors.light.border,
     borderRadius: 5,
     padding: 10,
-    backgroundColor: "white",
+    backgroundColor: colors.light.card,
+    color: colors.light.text,
   },
   textArea: {
     height: 100,
@@ -267,7 +272,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   button: {
-    backgroundColor: "#2196F3",
+    backgroundColor: colors.light.primary,
     padding: 15,
     borderRadius: 5,
     alignItems: "center",

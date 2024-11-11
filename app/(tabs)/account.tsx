@@ -5,13 +5,17 @@ import { Text, View } from "@/components/Themed";
 import { Session } from "@supabase/supabase-js";
 import { TextInput, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
-
+import { useAppTheme } from "@/hooks/useAppTheme";
+import colors from "@/constants/Colors";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Fontisto } from "@expo/vector-icons";
 export default function Account() {
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
   const [session, setSession] = useState<Session | null>(null);
   const router = useRouter();
+  const { colors } = useAppTheme();
 
   useEffect(() => {
     let mounted = true;
@@ -111,8 +115,10 @@ export default function Account() {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Profile</Text>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <Fontisto name="person" size={32} color="black" />
+      </View>
       <View
         style={styles.separator}
         lightColor="#eee"
@@ -162,7 +168,7 @@ export default function Account() {
           </View>
         </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -170,14 +176,23 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: "center",
+    backgroundColor: "white",
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 60,
+    backgroundColor: "transparent",
   },
   formContainer: {
     width: "90%",
+    backgroundColor: "transparent",
   },
   title: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "bold",
-    marginTop: 40,
+    color: colors.light.text,
   },
   separator: {
     marginVertical: 30,
@@ -188,6 +203,7 @@ const styles = StyleSheet.create({
     paddingTop: 4,
     paddingBottom: 4,
     alignSelf: "stretch",
+    backgroundColor: "transparent",
   },
   mt20: {
     marginTop: 20,
@@ -196,32 +212,33 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     fontSize: 14,
     fontWeight: "600",
+    color: colors.light.text,
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: colors.light.border,
     borderRadius: 5,
     paddingHorizontal: 10,
     paddingVertical: 8,
-    backgroundColor: "white",
+    backgroundColor: colors.light.card,
   },
   button: {
-    backgroundColor: "white",
+    backgroundColor: colors.dark.background,
     padding: 10,
     borderRadius: 5,
     alignItems: "center",
   },
   signOutButton: {
-    backgroundColor: "red",
+    backgroundColor: colors.light.background,
     marginTop: 10,
   },
   buttonTextIn: {
-    color: "black",
+    color: colors.dark.text,
     fontWeight: "bold",
     fontSize: 16,
   },
   buttonTextOut: {
-    color: "white",
+    color: colors.light.text,
     fontWeight: "bold",
     fontSize: 16,
   },

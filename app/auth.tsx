@@ -12,6 +12,8 @@ import { supabase } from "../lib/supabase";
 import { Fontisto } from "@expo/vector-icons";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import { useAppTheme } from "@/hooks/useAppTheme";
+import colors from "@/constants/Colors";
 
 // Tells Supabase Auth to continuously refresh the session automatically if
 // the app is in the foreground. When this is added, you will continue to receive
@@ -30,6 +32,7 @@ export default function Auth() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { colors } = useAppTheme();
 
   async function signInWithEmail() {
     setLoading(true);
@@ -39,7 +42,7 @@ export default function Auth() {
     });
 
     if (error) Alert.alert(error.message);
-    else router.replace('/(tabs)');
+    else router.replace("/(tabs)");
     setLoading(false);
   }
 
@@ -54,7 +57,7 @@ export default function Auth() {
     });
 
     if (error) Alert.alert(error.message);
-    else if (session) router.replace('/(tabs)');
+    else if (session) router.replace("/(tabs)");
     else Alert.alert("Please check your inbox for email verification!");
     setLoading(false);
   }
@@ -148,10 +151,10 @@ export default function Auth() {
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    backgroundColor: colors.light.background,
     marginTop: 40,
     padding: 12,
-    backgroundColor: "white",
-    flex: 1,
   },
   bottomContainer: {
     flex: 1,
