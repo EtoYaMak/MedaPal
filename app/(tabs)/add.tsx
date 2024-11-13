@@ -190,10 +190,17 @@ export default function AddMedicationScreen() {
       borderWidth: 1,
       borderColor: colors.border,
       overflow: "hidden",
+      ...Platform.select({
+        android: {
+          width: "100%",
+        },
+      }),
     },
     picker: {
       height: Platform.OS === "ios" ? 150 : 50,
+      width: "100%",
       color: colors.text,
+      marginLeft: Platform.OS === "android" ? -8 : 0,
     },
     row: {
       flexDirection: "row",
@@ -292,32 +299,49 @@ export default function AddMedicationScreen() {
                   onValueChange={(value) =>
                     setFormData({ ...formData, dosage_unit: value })
                   }
-                  style={styles.picker}
                   dropdownIconColor={colors.text}
                   mode="dropdown"
-                  {...(Platform.OS === "ios"
-                    ? {
-                        itemStyle: {
-                          color: colors.text,
-                          backgroundColor: colors.card,
-                        },
-                      }
-                    : {
-                        style: [
-                          styles.picker,
-                          {
-                            backgroundColor: colors.background,
-                            color: colors.text,
-                          },
-                        ],
-                      })}
+                  style={[
+                    styles.picker,
+                    Platform.OS === "android" && {
+                      width: "100%",
+                      backgroundColor: colors.background,
+                      color: colors.text,
+                    },
+                  ]}
+                  itemStyle={Platform.OS === "ios" ? {
+                    fontSize: 16,
+                    color: colors.text,
+                    backgroundColor: colors.card,
+                  } : {}}
+                  dropdownIconRippleColor="transparent"
                 >
-                  <Picker.Item label="mg" value="mg" color={colors.text} />
-                  <Picker.Item label="ml" value="ml" color={colors.text} />
                   <Picker.Item
-                    label="pills"
+                    label="mg"
+                    value="mg"
+                    style={{
+                      backgroundColor: colors.card,
+                      color: colors.text,
+                      fontSize: 16,
+                    }}
+                  />
+                  <Picker.Item
+                    label="ml"
+                    value="ml"
+                    style={{
+                      backgroundColor: colors.card,
+                      color: colors.text,
+                      fontSize: 16,
+                    }}
+                  />
+                  <Picker.Item
+                    label="Pills"
                     value="pills"
-                    color={colors.text}
+                    style={{
+                      backgroundColor: colors.card,
+                      color: colors.text,
+                      fontSize: 16,
+                    }}
                   />
                 </Picker>
               </View>
@@ -335,36 +359,48 @@ export default function AddMedicationScreen() {
                 onValueChange={(value) =>
                   setFormData({ ...formData, frequency: value })
                 }
-                style={styles.picker}
                 dropdownIconColor={colors.text}
                 mode="dropdown"
-                {...(Platform.OS === "ios"
-                  ? {
-                      itemStyle: {
+                style={[
+                  styles.picker,
+                  Platform.OS === "android" && {
+                    backgroundColor: colors.background,
+                    color: colors.text,
+                  },
+                ]}
+                itemStyle={
+                  Platform.OS === "ios"
+                    ? {
+                        fontSize: 16,
                         color: colors.text,
                         backgroundColor: colors.card,
-                      },
-                    }
-                  : {
-                      style: [
-                        styles.picker,
-                        {
-                          backgroundColor: colors.background,
-                          color: colors.text,
-                        },
-                      ],
-                    })}
+                      }
+                    : {}
+                }
               >
-                <Picker.Item label="Daily" value="daily" color={colors.text} />
+                <Picker.Item
+                  label="Daily"
+                  value="daily"
+                  style={{
+                    backgroundColor: colors.card,
+                    color: colors.text,
+                  }}
+                />
                 <Picker.Item
                   label="Weekly"
                   value="weekly"
-                  color={colors.text}
+                  style={{
+                    backgroundColor: colors.card,
+                    color: colors.text,
+                  }}
                 />
                 <Picker.Item
                   label="Monthly"
                   value="monthly"
-                  color={colors.text}
+                  style={{
+                    backgroundColor: colors.card,
+                    color: colors.text,
+                  }}
                 />
               </Picker>
             </View>
