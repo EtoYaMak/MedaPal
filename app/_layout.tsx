@@ -1,16 +1,17 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
+  DarkTheme as NavigationDarkTheme,
+  DefaultTheme as NavigationDefaultTheme,
+  ThemeProvider as NavigationThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { Redirect, Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
-import { useColorScheme } from "react-native";
+import { useColorScheme, StatusBar } from "react-native";
 import { supabase } from "../lib/supabase";
 import { Session } from "@supabase/supabase-js";
+import { ThemeProvider as CustomThemeProvider } from "@/hooks/useTheme";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -33,6 +34,7 @@ export default function RootLayout() {
 
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const colorScheme = useColorScheme();
 
   // Monitor auth state
   useEffect(() => {
@@ -61,18 +63,28 @@ export default function RootLayout() {
     return null;
   }
 
-  return <RootLayoutNav session={session} />;
+  return (
+    <CustomThemeProvider>
+      <StatusBar
+        barStyle={colorScheme === "dark" ? "light-content" : "dark-content"}
+        backgroundColor={colorScheme === "dark" ? "#121212" : "#F7F7F7"}
+      />
+      <NavigationThemeProvider
+        value={
+          colorScheme === "dark" ? NavigationDarkTheme : NavigationDefaultTheme
+        }
+      >
+        <RootLayoutNav session={session} />
+      </NavigationThemeProvider>
+    </CustomThemeProvider>
+  );
 }
 
 function RootLayoutNav({ session }: { session: Session | null }) {
-  const colorScheme = useColorScheme();
-
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="auth" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      </Stack>
-    </ThemeProvider>
+    <Stack>
+      <Stack.Screen name="auth" options={{ headerShown: false }} />
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+    </Stack>
   );
 }

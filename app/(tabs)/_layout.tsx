@@ -1,22 +1,21 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { Tabs, useRouter } from "expo-router";
+import { Tabs } from "expo-router";
 import { useEffect } from "react";
 import { supabase } from "../../lib/supabase";
-import Colors from "@/constants/Colors";
-import { useColorScheme } from "@/components/useColorScheme";
+import { useRouter } from "expo-router";
+import { useTheme } from "@/hooks/useTheme";
 
 function TabBarIcon(props: {
   name: React.ComponentProps<typeof FontAwesome>["name"];
   color: string;
 }) {
-  return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
+  return <FontAwesome size={24} style={{ marginBottom: -3 }} {...props} />;
 }
 
 export default function TabLayout() {
   const router = useRouter();
-  const colorScheme = useColorScheme();
+  const { theme, colors } = useTheme();
 
-  // Check for session on mount
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
@@ -28,7 +27,19 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.subText,
+        tabBarStyle: {
+          backgroundColor: colors.card,
+          borderTopColor: colors.border,
+          height: 60,
+          paddingBottom: 8,
+          paddingTop: 8,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: "500",
+        },
       }}
     >
       <Tabs.Screen
@@ -42,8 +53,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="add"
         options={{
-          title: "Add Medication",
-          href: null,
+          title: "Add",
+          tabBarIcon: ({ color }) => <TabBarIcon name="plus-square" color={color} />,
           headerShown: false,
         }}
       />

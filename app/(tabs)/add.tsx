@@ -5,19 +5,26 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
+  View,
+  Text,
+  Platform,
+  Dimensions,
 } from "react-native";
-import { Text, View } from "@/components/Themed";
 import { supabase } from "../../lib/supabase";
 import { useRouter } from "expo-router";
 import { Picker } from "@react-native-picker/picker";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useAppTheme } from "@/hooks/useAppTheme";
-import colors from "@/constants/Colors";
-// Define the time slots enum to match your Supabase enum
+import { useTheme } from "@/hooks/useTheme";
+import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
+import { PageHeader } from "@/components/PageHeader";
+
+const { width } = Dimensions.get("window");
+
 type TimeOfDay = "morning" | "afternoon" | "evening" | "bedtime";
 
 export default function AddMedicationScreen() {
   const router = useRouter();
+  const { colors, theme } = useTheme();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     medication_name: "",
@@ -25,13 +32,12 @@ export default function AddMedicationScreen() {
     dosage_unit: "mg",
     frequency: "daily",
     times_per_frequency: 1,
-    preferred_time: ["morning"] as TimeOfDay[], // Default to morning
+    preferred_time: ["morning"] as TimeOfDay[],
     remaining_quantity: "",
     notes: "",
     refill_reminder: false,
     refill_reminder_threshold: "",
   });
-  const { colors } = useAppTheme();
 
   async function addMedication() {
     try {
@@ -70,22 +76,186 @@ export default function AddMedicationScreen() {
     const timeIndex = currentTimes.indexOf(time);
 
     if (timeIndex >= 0) {
-      // Remove time if already selected
       currentTimes.splice(timeIndex, 1);
     } else {
-      // Add time if not selected
       currentTimes.push(time);
     }
 
     setFormData({ ...formData, preferred_time: currentTimes });
   };
 
-  return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <ScrollView style={styles.container}>
-        <View style={styles.formContainer}>
-          <Text style={styles.title}>Add New Medication</Text>
+  function getTimeStyle(time: TimeOfDay, isSelected: boolean) {
+    const isDark = theme === "dark";
 
+    switch (time) {
+      case "morning":
+        return {
+          background: isSelected
+            ? isDark
+              ? "#FF9800"
+              : "#FF9800"
+            : isDark
+            ? "#433327"
+            : "#FFF3E0",
+          text: isSelected ? "#FFFFFF" : isDark ? "#FF9800" : "#E65100",
+          icon: "weather-sunny" as const,
+        };
+      case "afternoon":
+        return {
+          background: isSelected
+            ? isDark
+              ? "#FFC107"
+              : "#FFC107"
+            : isDark
+            ? "#443D27"
+            : "#FFF8E1",
+          text: isSelected ? "#FFFFFF" : isDark ? "#FFC107" : "#FF8F00",
+          icon: "weather-partly-cloudy" as const,
+        };
+      case "evening":
+        return {
+          background: isSelected
+            ? isDark
+              ? "#2196F3"
+              : "#2196F3"
+            : isDark
+            ? "#273844"
+            : "#E3F2FD",
+          text: isSelected ? "#FFFFFF" : isDark ? "#2196F3" : "#0D47A1",
+          icon: "weather-sunset" as const,
+        };
+      case "bedtime":
+        return {
+          background: isSelected
+            ? isDark
+              ? "#673AB7"
+              : "#673AB7"
+            : isDark
+            ? "#342D44"
+            : "#EDE7F6",
+          text: isSelected ? "#FFFFFF" : isDark ? "#673AB7" : "#4527A0",
+          icon: "bed" as const,
+        };
+    }
+  }
+
+  const styles = StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    container: {
+      padding: 20,
+      flex: 1,
+      paddingBottom: 100,
+    },
+
+    section: {
+      marginBottom: 24,
+      backgroundColor: colors.card,
+      borderRadius: 16,
+      padding: 16,
+      shadowColor: theme === "dark" ? "#000" : "#666",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 8,
+      elevation: 3,
+    },
+    sectionTitle: {
+      fontSize: 18,
+      fontWeight: "600",
+      color: colors.text,
+      marginBottom: 16,
+    },
+    inputGroup: {
+      marginBottom: 16,
+    },
+    label: {
+      fontSize: 14,
+      color: colors.subText,
+      marginBottom: 8,
+    },
+    input: {
+      backgroundColor: colors.background,
+      borderRadius: 12,
+      padding: 12,
+      fontSize: 16,
+      color: colors.text,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    pickerContainer: {
+      backgroundColor: colors.background,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.border,
+      overflow: "hidden",
+    },
+    picker: {
+      height: Platform.OS === "ios" ? 150 : 50,
+      color: colors.text,
+    },
+    row: {
+      flexDirection: "row",
+      gap: 12,
+      alignItems: "center",
+    },
+    timeButtons: {
+      flexDirection: "row",
+      flexWrap: "wrap",
+      gap: 8,
+    },
+    timeButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingVertical: 8,
+      paddingHorizontal: 12,
+      borderRadius: 20,
+      gap: 6,
+    },
+    timeButtonText: {
+      fontSize: 14,
+      fontWeight: "500",
+    },
+    textArea: {
+      height: 100,
+      textAlignVertical: "top",
+    },
+    submitButton: {
+      backgroundColor: colors.primary,
+      borderRadius: 12,
+      padding: 16,
+      alignItems: "center",
+      marginTop: 24,
+      marginBottom: 24,
+    },
+    submitButtonText: {
+      color: "#FFF",
+      fontSize: 16,
+      fontWeight: "600",
+    },
+    backButton: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 4,
+    },
+    backButtonText: {
+      color: colors.text,
+      fontSize: 16,
+    },
+  });
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <PageHeader title="Add Medication" showBack />
+
+      <ScrollView
+        style={styles.container}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 20 }}
+      >
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Basic Information</Text>
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Medication Name</Text>
             <TextInput
@@ -95,6 +265,7 @@ export default function AddMedicationScreen() {
                 setFormData({ ...formData, medication_name: text })
               }
               placeholder="Enter medication name"
+              placeholderTextColor={colors.subText}
             />
           </View>
 
@@ -108,39 +279,95 @@ export default function AddMedicationScreen() {
                   setFormData({ ...formData, dosage: text })
                 }
                 keyboardType="numeric"
-                placeholder="Enter dosage"
+                placeholder="Amount"
+                placeholderTextColor={colors.subText}
               />
             </View>
 
             <View style={[styles.inputGroup, { flex: 1 }]}>
               <Text style={styles.label}>Unit</Text>
-              <Picker
-                selectedValue={formData.dosage_unit}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, dosage_unit: value })
-                }
-                style={styles.picker}
-              >
-                <Picker.Item label="mg" value="mg" />
-                <Picker.Item label="ml" value="ml" />
-                <Picker.Item label="pills" value="pills" />
-              </Picker>
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={formData.dosage_unit}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, dosage_unit: value })
+                  }
+                  style={styles.picker}
+                  dropdownIconColor={colors.text}
+                  mode="dropdown"
+                  {...(Platform.OS === "ios"
+                    ? {
+                        itemStyle: {
+                          color: colors.text,
+                          backgroundColor: colors.card,
+                        },
+                      }
+                    : {
+                        style: [
+                          styles.picker,
+                          {
+                            backgroundColor: colors.background,
+                            color: colors.text,
+                          },
+                        ],
+                      })}
+                >
+                  <Picker.Item label="mg" value="mg" color={colors.text} />
+                  <Picker.Item label="ml" value="ml" color={colors.text} />
+                  <Picker.Item
+                    label="pills"
+                    value="pills"
+                    color={colors.text}
+                  />
+                </Picker>
+              </View>
             </View>
           </View>
+        </View>
 
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Schedule</Text>
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Frequency</Text>
-            <Picker
-              selectedValue={formData.frequency}
-              onValueChange={(value) =>
-                setFormData({ ...formData, frequency: value })
-              }
-              style={styles.picker}
-            >
-              <Picker.Item label="Daily" value="daily" />
-              <Picker.Item label="Weekly" value="weekly" />
-              <Picker.Item label="Monthly" value="monthly" />
-            </Picker>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={formData.frequency}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, frequency: value })
+                }
+                style={styles.picker}
+                dropdownIconColor={colors.text}
+                mode="dropdown"
+                {...(Platform.OS === "ios"
+                  ? {
+                      itemStyle: {
+                        color: colors.text,
+                        backgroundColor: colors.card,
+                      },
+                    }
+                  : {
+                      style: [
+                        styles.picker,
+                        {
+                          backgroundColor: colors.background,
+                          color: colors.text,
+                        },
+                      ],
+                    })}
+              >
+                <Picker.Item label="Daily" value="daily" color={colors.text} />
+                <Picker.Item
+                  label="Weekly"
+                  value="weekly"
+                  color={colors.text}
+                />
+                <Picker.Item
+                  label="Monthly"
+                  value="monthly"
+                  color={colors.text}
+                />
+              </Picker>
+            </View>
           </View>
 
           <View style={styles.inputGroup}>
@@ -148,47 +375,42 @@ export default function AddMedicationScreen() {
             <View style={styles.timeButtons}>
               {(
                 ["morning", "afternoon", "evening", "bedtime"] as TimeOfDay[]
-              ).map((time) => (
-                <TouchableOpacity
-                  key={time}
-                  style={[
-                    styles.timeButton,
-                    formData.preferred_time.includes(time) &&
-                      styles.timeButtonSelected,
-                  ]}
-                  onPress={() => handleTimeSelection(time)}
-                >
-                  <Text
+              ).map((time) => {
+                const isSelected = formData.preferred_time.includes(time);
+                const timeStyle = getTimeStyle(time, isSelected);
+
+                return (
+                  <TouchableOpacity
+                    key={time}
                     style={[
-                      styles.timeButtonText,
-                      formData.preferred_time.includes(time) &&
-                        styles.timeButtonTextSelected,
+                      styles.timeButton,
+                      {
+                        backgroundColor: timeStyle.background,
+                        borderWidth: 1,
+                        borderColor: timeStyle.background,
+                      },
                     ]}
+                    onPress={() => handleTimeSelection(time)}
                   >
-                    {time === "bedtime"
-                      ? "Bedtime"
-                      : time.charAt(0).toUpperCase() + time.slice(1)}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+                    <MaterialCommunityIcons
+                      name={timeStyle.icon}
+                      size={18}
+                      color={timeStyle.text}
+                    />
+                    <Text
+                      style={[styles.timeButtonText, { color: timeStyle.text }]}
+                    >
+                      {time.charAt(0).toUpperCase() + time.slice(1)}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
           </View>
+        </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Times per {formData.frequency}</Text>
-            <TextInput
-              style={styles.input}
-              value={formData.times_per_frequency.toString()}
-              onChangeText={(text) =>
-                setFormData({
-                  ...formData,
-                  times_per_frequency: parseInt(text) || 1,
-                })
-              }
-              keyboardType="numeric"
-            />
-          </View>
-
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Additional Details</Text>
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Remaining Quantity</Text>
             <TextInput
@@ -199,6 +421,7 @@ export default function AddMedicationScreen() {
               }
               keyboardType="numeric"
               placeholder="Optional"
+              placeholderTextColor={colors.subText}
             />
           </View>
 
@@ -210,104 +433,22 @@ export default function AddMedicationScreen() {
               onChangeText={(text) => setFormData({ ...formData, notes: text })}
               multiline
               numberOfLines={4}
-              placeholder="Optional notes"
+              placeholder="Add any additional notes here"
+              placeholderTextColor={colors.subText}
             />
           </View>
-
-          <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={addMedication}
-            disabled={loading}
-          >
-            <Text style={styles.buttonText}>
-              {loading ? "Adding..." : "Add Medication"}
-            </Text>
-          </TouchableOpacity>
         </View>
+
+        <TouchableOpacity
+          style={[styles.submitButton, loading && { opacity: 0.7 }]}
+          onPress={addMedication}
+          disabled={loading}
+        >
+          <Text style={styles.submitButtonText}>
+            {loading ? "Adding..." : "Add Medication"}
+          </Text>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  formContainer: {
-    padding: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
-  inputGroup: {
-    marginBottom: 15,
-  },
-  row: {
-    flexDirection: "row",
-    gap: 10,
-  },
-  label: {
-    fontSize: 16,
-    marginBottom: 5,
-    fontWeight: "500",
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: colors.light.border,
-    borderRadius: 5,
-    padding: 10,
-    backgroundColor: colors.light.card,
-    color: colors.light.text,
-  },
-  textArea: {
-    height: 100,
-    textAlignVertical: "top",
-  },
-  picker: {
-    backgroundColor: "white",
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 5,
-  },
-  button: {
-    backgroundColor: colors.light.primary,
-    padding: 15,
-    borderRadius: 5,
-    alignItems: "center",
-    marginTop: 20,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonText: {
-    color: "white",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  timeButtons: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 10,
-    marginTop: 5,
-  },
-  timeButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    backgroundColor: "white",
-  },
-  timeButtonSelected: {
-    backgroundColor: "#2196F3",
-    borderColor: "#2196F3",
-  },
-  timeButtonText: {
-    color: "#666",
-  },
-  timeButtonTextSelected: {
-    color: "white",
-  },
-});

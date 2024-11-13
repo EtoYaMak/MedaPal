@@ -3,180 +3,244 @@ import {
   Alert,
   StyleSheet,
   View,
-  AppState,
   TouchableOpacity,
   TextInput,
   Text,
+  Dimensions,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { supabase } from "../lib/supabase";
-import { Fontisto } from "@expo/vector-icons";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { Fontisto, MaterialCommunityIcons } from "@expo/vector-icons";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { useAppTheme } from "@/hooks/useAppTheme";
-import colors from "@/constants/Colors";
+import { useTheme } from "@/hooks/useTheme";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
-// Tells Supabase Auth to continuously refresh the session automatically if
-// the app is in the foreground. When this is added, you will continue to receive
-// `onAuthStateChange` events with the `TOKEN_REFRESHED` or `SIGNED_OUT` event
-// if the user's session is terminated. This should only be registered once.
-AppState.addEventListener("change", (state) => {
-  if (state === "active") {
-    supabase.auth.startAutoRefresh();
-  } else {
-    supabase.auth.stopAutoRefresh();
-  }
-});
+const { width } = Dimensions.get("window");
 
 export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
-  const { colors } = useAppTheme();
+  const { colors } = useTheme();
 
-  async function signInWithEmail() {
+  async function handleAuth() {
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email,
-      password: password,
-    });
-
-    if (error) Alert.alert(error.message);
-    else router.replace("/(tabs)");
-    setLoading(false);
+    try {
+      if (isSignUp) {
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.signUp({
+          email,
+          password,
+        });
+        if (error) throw error;
+        if (session) router.replace("/(tabs)");
+        else
+          Alert.alert("Success", "Please check your inbox for verification!");
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (error) throw error;
+        router.replace("/(tabs)");
+      }
+    } catch (error: any) {
+      Alert.alert("Error", error.message);
+    } finally {
+      setLoading(false);
+    }
   }
 
-  async function signUpWithEmail() {
-    setLoading(true);
-    const {
-      data: { session },
-      error,
-    } = await supabase.auth.signUp({
-      email: email,
-      password: password,
-    });
-
-    if (error) Alert.alert(error.message);
-    else if (session) router.replace("/(tabs)");
-    else Alert.alert("Please check your inbox for email verification!");
-    setLoading(false);
-  }
+  const styles = StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    container: {
+      flex: 1,
+      padding: 24,
+    },
+    header: {
+      flexDirection: "row",
+      justifyContent: "flex-end",
+      paddingVertical: 16,
+    },
+    heroSection: {
+      alignItems: "center",
+      marginTop: 40,
+      marginBottom: 60,
+    },
+    logoContainer: {
+      backgroundColor: colors.primary,
+      padding: 20,
+      borderRadius: 24,
+      marginBottom: 24,
+    },
+    appName: {
+      fontSize: 32,
+      fontWeight: "bold",
+      color: colors.text,
+      marginBottom: 12,
+    },
+    tagline: {
+      fontSize: 16,
+      color: colors.subText,
+      textAlign: "center",
+      maxWidth: width * 0.8,
+    },
+    form: {
+      gap: 16,
+    },
+    inputContainer: {
+      gap: 8,
+    },
+    inputWrapper: {
+      flexDirection: "row",
+      alignItems: "center",
+      backgroundColor: colors.card,
+      gap: 8,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: colors.border,
+      paddingHorizontal: 16,
+    },
+    input: {
+      flex: 1,
+      height: 48,
+      color: colors.text,
+      fontSize: 16,
+      paddingLeft: 8,
+    },
+    iconContainer: {
+      padding: 8,
+    },
+    mainButton: {
+      backgroundColor: colors.primary,
+      height: 56,
+      borderRadius: 12,
+      justifyContent: "center",
+      alignItems: "center",
+      marginTop: 24,
+    },
+    mainButtonText: {
+      color: "#FFFFFF",
+      fontSize: 18,
+      fontWeight: "600",
+    },
+    switchButton: {
+      marginTop: 16,
+      alignItems: "center",
+    },
+    switchText: {
+      color: colors.primary,
+      fontSize: 16,
+    },
+  });
 
   return (
     <SafeAreaProvider>
-      <View style={styles.container}>
-        <View style={styles.header}>
-          <Fontisto name="pills" size={30} color="black" />
-          <Text style={styles.title}>MedPal</Text>
-        </View>
-        <View style={[styles.verticallySpaced, styles.mt20]}>
-          <TextInput
-            placeholder="Email"
-            onChangeText={(text) => setEmail(text)}
-            value={email}
-            autoCapitalize={"none"}
-            style={{
-              padding: 10,
-              borderRadius: 5,
-              borderBottomWidth: 1,
-              borderBottomColor: "#F0F0F0",
-            }}
-          />
-        </View>
-        <View style={styles.verticallySpaced}>
-          <TextInput
-            placeholder="Password"
-            onChangeText={(text) => setPassword(text)}
-            value={password}
-            secureTextEntry={true}
-            autoCapitalize={"none"}
-            style={{
-              padding: 10,
-              borderRadius: 5,
-              borderBottomWidth: 1,
-              borderBottomColor: "#F0F0F0",
-            }}
-          />
-        </View>
-        <View style={styles.bottomContainer}>
-          <View style={[styles.verticallySpaced, styles.mt20]}>
+      <SafeAreaView style={styles.safeArea}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={styles.container}
+        >
+          <View style={styles.header}>
+            <ThemeToggle />
+          </View>
+
+          <View style={styles.heroSection}>
+            <View style={styles.logoContainer}>
+              <Fontisto name="pills" size={40} color="#FFFFFF" />
+            </View>
+            <Text style={styles.appName}>MedPal</Text>
+            <Text style={styles.tagline}>
+              Your personal medication tracking assistant
+            </Text>
+          </View>
+
+          <View style={styles.form}>
+            <View style={styles.inputContainer}>
+              <View style={styles.inputWrapper}>
+                <MaterialCommunityIcons
+                  name="email-outline"
+                  size={24}
+                  color={colors.subText}
+                />
+                <TextInput
+                  placeholder="Email"
+                  placeholderTextColor={colors.subText}
+                  value={email}
+                  onChangeText={setEmail}
+                  autoCapitalize="none"
+                  keyboardType="email-address"
+                  style={styles.input}
+                />
+              </View>
+            </View>
+
+            <View style={styles.inputContainer}>
+              <View style={styles.inputWrapper}>
+                <MaterialCommunityIcons
+                  name="lock-outline"
+                  size={24}
+                  color={colors.subText}
+                />
+                <TextInput
+                  placeholder="Password"
+                  placeholderTextColor={colors.subText}
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPassword}
+                  autoCapitalize="none"
+                  style={styles.input}
+                />
+                <TouchableOpacity
+                  style={styles.iconContainer}
+                  onPress={() => setShowPassword(!showPassword)}
+                >
+                  <MaterialCommunityIcons
+                    name={showPassword ? "eye-off-outline" : "eye-outline"}
+                    size={24}
+                    color={colors.subText}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+
             <TouchableOpacity
+              style={[styles.mainButton, loading && { opacity: 0.7 }]}
+              onPress={handleAuth}
               disabled={loading}
-              onPress={() => signInWithEmail()}
-              style={{
-                backgroundColor: "black",
-                padding: 10,
-                borderRadius: 5,
-              }}
             >
-              <Text
-                style={{
-                  color: "white",
-                  fontWeight: "bold",
-                  textAlign: "center",
-                  fontSize: 16,
-                }}
-              >
-                Sign in
+              <Text style={styles.mainButtonText}>
+                {loading
+                  ? "Please wait..."
+                  : isSignUp
+                  ? "Create Account"
+                  : "Sign In"}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.switchButton}
+              onPress={() => setIsSignUp(!isSignUp)}
+            >
+              <Text style={styles.switchText}>
+                {isSignUp
+                  ? "Already have an account? Sign In"
+                  : "New here? Create Account"}
               </Text>
             </TouchableOpacity>
           </View>
-          <View style={styles.verticallySpaced}>
-            <TouchableOpacity
-              disabled={loading}
-              onPress={() => signUpWithEmail()}
-              style={{
-                backgroundColor: "#F0F0F0",
-                padding: 10,
-                borderRadius: 5,
-              }}
-            >
-              <Text
-                style={{
-                  color: "black",
-                  fontWeight: "bold",
-                  textAlign: "center",
-                  fontSize: 16,
-                }}
-              >
-                Sign up
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
     </SafeAreaProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.light.background,
-    marginTop: 40,
-    padding: 12,
-  },
-  bottomContainer: {
-    flex: 1,
-    justifyContent: "flex-end",
-    paddingBottom: 60,
-  },
-  verticallySpaced: {
-    paddingTop: 4,
-    paddingBottom: 4,
-    alignSelf: "stretch",
-  },
-  mt20: {
-    marginTop: 20,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 60,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: "bold",
-  },
-});
