@@ -5,7 +5,7 @@ import {
   RefreshControl,
 } from "react-native";
 import { Text, View } from "@/components/Themed";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { supabase } from "../../lib/supabase";
 import { AntDesign, MaterialIcons } from "@expo/vector-icons";
 import { Session } from "@supabase/supabase-js";
@@ -13,6 +13,8 @@ import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "@/hooks/useTheme";
 import { PageHeader } from "@/components/PageHeader";
+import { AnimatedView } from "@/components/Animated";
+import { FloatingActionButton } from '../../components/FloatingActionButton';
 
 interface Medication {
   id: string;
@@ -32,9 +34,11 @@ export default function DashboardScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
   const router = useRouter();
-  const { colors } = useTheme();
+  const { colors, theme } = useTheme();
 
-  const getUserMedications = async () => {
+  const styles = useMemo(() => createStyles(colors), [colors]);
+
+  const getUserMedications = useCallback(async () => {
     try {
       setLoading(true);
       const {
@@ -56,13 +60,13 @@ export default function DashboardScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await getUserMedications();
     setRefreshing(false);
-  }, []);
+  }, [getUserMedications]);
 
   useEffect(() => {
     getUserMedications();
@@ -71,12 +75,16 @@ export default function DashboardScreen() {
       setSession(session);
     });
 
-    supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
-  }, []);
 
-  const getTimeIcon = (time: string) => {
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [getUserMedications]);
+
+  function getTimeIcon(time: string) {
     const colors = getTimeBackgroundColor(time);
 
     switch (time) {
@@ -85,18 +93,15 @@ export default function DashboardScreen() {
       case "afternoon":
         return <MaterialIcons name="wb-sunny" size={16} color={colors.text} />;
       case "evening":
-        return (
-          <MaterialIcons name="wb-twilight" size={16} color={colors.text} />
-        );
+        return <MaterialIcons name="wb-twilight" size={16} color={colors.text} />;
       case "bedtime":
         return <MaterialIcons name="bedtime" size={16} color={colors.text} />;
       default:
         return null;
     }
-  };
+  }
 
   function getTimeBackgroundColor(time: string): { bg: string; text: string } {
-    const { theme } = useTheme();
     const isDark = theme === "dark";
 
     switch (time) {
@@ -128,7 +133,90 @@ export default function DashboardScreen() {
     }
   }
 
-  const styles = StyleSheet.create({
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <PageHeader title="My Medications" />
+
+      <ScrollView
+        style={styles.container}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        {medications.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No medications added yet</Text>
+            <Text style={styles.emptySubText}>
+              Tap the + button below to add your first medication
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.medicationGrid}>
+            {medications.map((med, index) => (
+              <View key={med.id} style={[styles.medicationCard]}>
+                <View style={styles.cardTop}>
+                  <View style={styles.nameContainer}>
+                    <Text style={styles.medicationName} numberOfLines={1}>
+                      {med.medication_name}
+                    </Text>
+                    <Text style={styles.dosageText}>
+                      {med.dosage} {med.dosage_unit}
+                    </Text>
+                  </View>
+
+                  <View style={styles.frequencyBadge}>
+                    <Text style={styles.frequencyText}>
+                      {med.times_per_frequency}x
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={styles.timeBadgesContainer}>
+                  {med.preferred_time.map((time, index) => {
+                    const timeColors = getTimeBackgroundColor(time);
+                    return (
+                      <View
+                        key={index}
+                        style={[
+                          styles.timeBadge,
+                          { backgroundColor: timeColors.bg },
+                        ]}
+                      >
+                        {getTimeIcon(time)}
+                        <Text
+                          style={[
+                            styles.timeBadgeText,
+                            { color: timeColors.text },
+                          ]}
+                        >
+                          {time.charAt(0).toUpperCase() + time.slice(1)}
+                        </Text>
+                      </View>
+                    );
+                  })}
+                </View>
+
+                {med.remaining_quantity && (
+                  <View style={styles.remainingStrip}>
+                    <MaterialIcons name="medication" size={14} color="#666" />
+                    <Text style={styles.remainingText}>
+                      {med.remaining_quantity} remaining
+                    </Text>
+                  </View>
+                )}
+              </View>
+            ))}
+          </View>
+        )}
+      </ScrollView>
+
+      <FloatingActionButton />
+    </SafeAreaView>
+  );
+}
+
+function createStyles(colors: any) {
+  return StyleSheet.create({
     safeArea: {
       flex: 1,
       backgroundColor: colors.background,
@@ -274,98 +362,4 @@ export default function DashboardScreen() {
       shadowRadius: 4.65,
     },
   });
-
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <PageHeader title="My Medications" />
-
-      <ScrollView
-        style={styles.container}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
-        {medications.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No medications added yet</Text>
-            <Text style={styles.emptySubText}>
-              Tap the + button below to add your first medication
-            </Text>
-          </View>
-        ) : (
-          <View style={styles.medicationGrid}>
-            {medications.map((med) => (
-              <TouchableOpacity
-                key={med.id}
-                style={styles.medicationCard}
-                onPress={() => {
-                  // Handle card press - maybe navigate to detail view
-                }}
-              >
-                <View style={styles.cardTop}>
-                  <View style={styles.nameContainer}>
-                    <Text style={styles.medicationName} numberOfLines={1}>
-                      {med.medication_name}
-                    </Text>
-                    <Text style={styles.dosageText}>
-                      {med.dosage} {med.dosage_unit}
-                    </Text>
-                  </View>
-
-                  <View style={styles.frequencyBadge}>
-                    <Text style={styles.frequencyText}>
-                      {med.times_per_frequency}x
-                    </Text>
-                  </View>
-                </View>
-
-                <View style={styles.timeBadgesContainer}>
-                  {med.preferred_time.map((time, index) => {
-                    const timeColors = getTimeBackgroundColor(time);
-                    return (
-                      <View
-                        key={index}
-                        style={[
-                          styles.timeBadge,
-                          { backgroundColor: timeColors.bg },
-                        ]}
-                      >
-                        {getTimeIcon(time)}
-                        <Text
-                          style={[
-                            styles.timeBadgeText,
-                            { color: timeColors.text },
-                          ]}
-                        >
-                          {time.charAt(0).toUpperCase() + time.slice(1)}
-                        </Text>
-                      </View>
-                    );
-                  })}
-                </View>
-
-                {med.remaining_quantity && (
-                  <View style={styles.remainingStrip}>
-                    <MaterialIcons name="medication" size={14} color="#666" />
-                    <Text style={styles.remainingText}>
-                      {med.remaining_quantity} remaining
-                    </Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-      </ScrollView>
-
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={() => {
-          router.push("/add");
-        }}
-      >
-        <AntDesign name="plus" size={24} color="white" />
-      </TouchableOpacity>
-    </SafeAreaView>
-  );
 }

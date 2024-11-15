@@ -12,6 +12,7 @@ import { useColorScheme, StatusBar } from "react-native";
 import { supabase } from "../lib/supabase";
 import { Session } from "@supabase/supabase-js";
 import { ThemeProvider as CustomThemeProvider } from "@/hooks/useTheme";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -64,19 +65,38 @@ export default function RootLayout() {
   }
 
   return (
-    <CustomThemeProvider>
-      <StatusBar
-        barStyle={colorScheme === "dark" ? "light-content" : "dark-content"}
-        backgroundColor={colorScheme === "dark" ? "#121212" : "#F7F7F7"}
-      />
-      <NavigationThemeProvider
-        value={
-          colorScheme === "dark" ? NavigationDarkTheme : NavigationDefaultTheme
-        }
-      >
-        <RootLayoutNav session={session} />
-      </NavigationThemeProvider>
-    </CustomThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <CustomThemeProvider>
+        <NavigationThemeProvider
+          value={
+            colorScheme === "dark" ? NavigationDarkTheme : NavigationDefaultTheme
+          }
+        >
+          <Stack
+            screenOptions={{
+              animation: "fade_from_bottom",
+              headerShown: false,
+              contentStyle: {
+                backgroundColor: 'transparent',
+              },
+            }}
+          >
+            <Stack.Screen 
+              name="auth" 
+              options={{
+                animation: "fade",
+              }} 
+            />
+            <Stack.Screen 
+              name="(tabs)" 
+              options={{
+                animation: "fade",
+              }}
+            />
+          </Stack>
+        </NavigationThemeProvider>
+      </CustomThemeProvider>
+    </GestureHandlerRootView>
   );
 }
 

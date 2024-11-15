@@ -17,6 +17,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "@/hooks/useTheme";
 import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 import { PageHeader } from "@/components/PageHeader";
+import { AnimatedView } from "@/components/Animated";
 
 const { width } = Dimensions.get("window");
 
@@ -309,11 +310,15 @@ export default function AddMedicationScreen() {
                       color: colors.text,
                     },
                   ]}
-                  itemStyle={Platform.OS === "ios" ? {
-                    fontSize: 16,
-                    color: colors.text,
-                    backgroundColor: colors.card,
-                  } : {}}
+                  itemStyle={
+                    Platform.OS === "ios"
+                      ? {
+                          fontSize: 16,
+                          color: colors.text,
+                          backgroundColor: colors.card,
+                        }
+                      : {}
+                  }
                   dropdownIconRippleColor="transparent"
                 >
                   <Picker.Item
@@ -349,7 +354,7 @@ export default function AddMedicationScreen() {
           </View>
         </View>
 
-        <View style={styles.section}>
+        <View style={[styles.section]}>
           <Text style={styles.sectionTitle}>Schedule</Text>
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Frequency</Text>
@@ -445,7 +450,7 @@ export default function AddMedicationScreen() {
           </View>
         </View>
 
-        <View style={styles.section}>
+        <View style={[styles.section]}>
           <Text style={styles.sectionTitle}>Additional Details</Text>
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Remaining Quantity</Text>
@@ -475,15 +480,13 @@ export default function AddMedicationScreen() {
           </View>
         </View>
 
-        <TouchableOpacity
-          style={[styles.submitButton, loading && { opacity: 0.7 }]}
-          onPress={addMedication}
-          disabled={loading}
-        >
-          <Text style={styles.submitButtonText}>
-            {loading ? "Adding..." : "Add Medication"}
-          </Text>
-        </TouchableOpacity>
+        <View style={[styles.submitButton, loading && { opacity: 0.7 }]}>
+          <TouchableOpacity onPress={addMedication} disabled={loading}>
+            <Text style={styles.submitButtonText}>
+              {loading ? "Adding..." : "Add Medication"}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );

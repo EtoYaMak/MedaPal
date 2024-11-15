@@ -54,7 +54,9 @@ export default function TabLayout() {
         name="add"
         options={{
           title: "Add",
-          tabBarIcon: ({ color }) => <TabBarIcon name="plus-square" color={color} />,
+          tabBarIcon: ({ color }) => (
+            <TabBarIcon name="plus-square" color={color} />
+          ),
           headerShown: false,
         }}
       />
@@ -64,6 +66,17 @@ export default function TabLayout() {
           title: "Profile",
           tabBarIcon: ({ color }) => <TabBarIcon name="user" color={color} />,
           headerShown: false,
+        }}
+      />
+      <Tabs.Screen
+        name="medications"
+        options={{
+          title: "Medications",
+          tabBarIcon: ({ color }) => (
+            <TabBarIcon name="microphone" color={color} />
+          ),
+          headerShown: false,
+          tabBarButton: () => null, // Makes the tab invisible
         }}
       />
     </Tabs>

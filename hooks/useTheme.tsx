@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { useColorScheme as useSystemColorScheme, StatusBar } from "react-native";
+import {
+  useColorScheme as useSystemColorScheme,
+  StatusBar,
+} from "react-native";
 
 type Theme = "light" | "dark";
 
@@ -56,7 +59,9 @@ export function ThemeProvider({ children }: ThemeProviderProps): JSX.Element {
   const toggleTheme = () => {
     setTheme((current) => {
       const newTheme = current === "light" ? "dark" : "light";
-      StatusBar.setBarStyle(newTheme === "dark" ? "light-content" : "dark-content");
+      StatusBar.setBarStyle(
+        newTheme === "dark" ? "light-content" : "dark-content"
+      );
       StatusBar.setBackgroundColor(newTheme === "dark" ? "#121212" : "#F7F7F7");
       return newTheme;
     });

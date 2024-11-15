@@ -7,6 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useTheme } from "@/hooks/useTheme";
 import { View, Text } from "react-native";
 import { PageHeader } from "@/components/PageHeader";
+import { AnimatedView } from "@/components/Animated";
 
 export default function Account() {
   const [loading, setLoading] = useState(true);
